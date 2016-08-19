@@ -16,7 +16,7 @@ class Player
     public $rapidStrike;
     public $magicShield;
 
-    private $hasLuck = false;
+    public $hasLuck = false;
     private $requiredProperties = array('name', 'health', 'strength', 'defence', 'speed', 'luck');
 
     public function __construct(array $player) {
@@ -49,9 +49,10 @@ class Game
         $this->players[] = new Player($player);
     }
 
-    public function prepareForFight()
+    public function play()
     {
         $this->determineFirstAttack();
+        $this->fight();
     }
 
     /**
@@ -78,17 +79,12 @@ class Game
         $this->attackers = array_slice($this->players, 0, 1);
         $this->defenders = array_slice($this->players, 1);
 
-        $this->fight();
-
-//        echo "Attacker: ";
-//        var_dump($this->attacker);
-//        echo "Defender: ";
-//        var_dump($this->defender);
-//
-//        echo "Players: ";
-//        var_dump($this->players);
+        var_dump($this->players);
     }
 
+    /**
+     * @param int $rounds
+     */
     public function fight($rounds = 1)
     {
         for ($i=1; $i<=$rounds; $i++) {
@@ -96,14 +92,29 @@ class Game
             /** @var Player $attacker */
             foreach ($this->attackers as $attacker) {
 
+                //echo "{$attacker->name} attacks with {$attacker->strength} strength the ";
+
                 /** @var Player $defender */
                 foreach ($this->defenders as $defender) {
-                    $damage = $attacker->health - $defender->defence;
-                    $defender->health -= $damage;
-                    echo "Damage was $damage from {$defender->health} \n";
+
+                    if ( ! self::getLuck($defender->luck)) {
+                        $damage = $attacker->strength - $defender->defence;
+
+                        echo '(' . $attacker->strength . " - " . $defender->defence . ") \n\n";
+
+                        echo "{$defender->name} with {$defender->defence} defence wich have $damage damage from {$defender->health} health. \n";
+                        $defender->health -= $damage;
+                        echo "Health remaining: {$defender->health} \n";
+                    } else {
+                        echo "attacker has missed :)) \n";
+                    }
+
                 }
 
             }
+
+            // Change ..
+
         }
     }
 
@@ -112,7 +123,7 @@ class Game
         $this->hero->hasLuck = $this->getLuck($this->hero->luck);
         $this->beast->hasLuck = $this->getLuck($this->beast->luck);
 
-        $damage = $this->{$this->attack}->strength - $this->{$this->defence}->defence;
+        $damage = $this->{$this->attack}->strength - $this->{$this->defence}->defence; // @TODO: What happen's with negative values?
         echo "Damage was $damage from {$this->defence} " . $this->{$this->defence}->health . "\n";
         $this->{$this->defence}->health -= $damage;
 
@@ -123,9 +134,10 @@ class Game
     }
 
     /**
-     * @return bool;
+     * @param int $chance
+     * @return bool
      */
-    public function getLuck($chance)
+    private static function getLuck($chance)
     {
         if (rand(1, 100) <= $chance) {
             echo "Has luck this time! :) ($chance%) \n";
@@ -140,8 +152,8 @@ class Game
 
 $hero = array(
     'name' => 'hero',
-    'health' => rand(50, 70),
-    'strength'  => rand(40, 60),
+    'health' => rand(70, 100),
+    'strength'  => rand(70, 80),
     'defence' => rand(45, 55),
     'speed' => rand(40, 50),
     'luck' => rand(10, 30),
@@ -158,22 +170,22 @@ $beast = array(
     'luck' => rand(25, 40),
 );
 
-$monster = array(
-    'name' => 'monster',
-    'health' => rand(60, 90),
-    'strength'  => rand(60, 90),
-    'defence' => rand(40, 60),
-    'speed' => rand(40, 60),
-    'luck' => rand(25, 40),
-);
+//$monster = array(
+//    'name' => 'monster',
+//    'health' => rand(60, 90),
+//    'strength'  => rand(60, 90),
+//    'defence' => rand(40, 60),
+//    'speed' => rand(40, 60),
+//    'luck' => rand(25, 40),
+//);
 
 
 $game = new Game;
 
 $game->addPlayer($hero);
 $game->addPlayer($beast);
-$game->addPlayer($monster);
+//$game->addPlayer($monster);
 
-$game->prepareForFight();
+$game->play();
 
 //var_dump($game->players);
