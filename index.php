@@ -1,19 +1,8 @@
 <?php
 
 /*
- * TODO: What happens when luck is same?
+ * TODO: What happens when speed and luck have same values?
  */
-
-
-$hero = array(
-    'health' => rand(50, 70),
-    'speed'  => rand(40, 60),
-    'defence' => rand(45, 55),
-    'speed' => rand(40, 50),
-    'luck' => rand(10, 30),
-    'rapidStrike' => 10,
-    'magicShield' => 20,
-);
 
 class Player
 {
@@ -23,14 +12,21 @@ class Player
     public $defence;
     public $speed;
     public $luck;
-    private $hasLuck = false;
-
-    private $reguiredProperties = array('name', 'health', 'strength', 'defence', 'speed', 'luck');
 
     public $rapidStrike;
     public $magicShield;
 
+    private $hasLuck = false;
+    private $requiredProperties = array('name', 'health', 'strength', 'defence', 'speed', 'luck');
+
     public function __construct(array $player) {
+
+        // Check for required properties
+        if ($needed = array_diff($this->requiredProperties, array_keys($player))) {
+            $needed = implode(", ", $needed);
+            die("$needed properties missing!");
+            // @TODO: requiredProperties needed!
+        }
         foreach ($player as $property => $value) {
             if (property_exists('Player', $property)) {
                 $this->{$property} = $value;
@@ -42,49 +38,19 @@ class Player
     }
 }
 
-$player = new Player($hero);
-
-var_dump($player);
-
-die('aici');
-
-class Hero extends Player
+class Game
 {
-    public $player = 'beast';
-    public $strike = 10; // strike twice
-    public $magicShield = 20; // half from damage when enemy attacks
+    private $attackers  = array();
+    private $defenders = array();
+    public $players = array();
 
-    public function __construct()
+    public function addPlayer($player)
     {
-        $this->health = rand(70, 100);
-        $this->strength = rand(70, 80);
-        $this->defence = rand(45, 55);
-        $this->speed = rand(40, 50);
-        $this->luck = rand(10, 30);
+        $this->players[] = new Player($player);
     }
 
-}
-
-
-class Battle
-{
-    public $attack  = array(); // Default attack - hero. (Not mentioned in game...)
-    public $defence = array();
-    public $players;
-
-    public function __construct(array $players)
+    public function prepareForFight()
     {
-
-        $this->players = $this->sortPlayers($players);
-
-        foreach ($players as $player) {
-            if (is_array($player) && count($players) > 0) {
-                $this->players[] = new Player($player);
-            } else {
-                // @TODO: no player
-            }
-        }
-
         $this->determineFirstAttack();
     }
 
@@ -92,51 +58,52 @@ class Battle
      * sort players by speed, health
      * @return array
      */
-    private function sortPlayers($players)
+    private function sortPlayers()
     {
-        foreach ($players as $k => $player) {
-            $speed[$k] = $player['speed'];
-            $luck[$k] = $player['luck'];
+        foreach ($this->players as $k => $player) {
+            $speed[$k] = $player->speed;
+            $luck[$k] = $player->luck;
         }
 
-        array_multisort($speed, SORT_DESC, $luck, SORT_DESC, $players);
-
-        return $players;
+        array_multisort($speed, SORT_DESC, $luck, SORT_DESC, $this->players);
     }
 
-    public function determineFirstAttack()
+    /**
+     * First attack is carried by first element. The others elements represents defender (defenders may be a feature)
+     */
+    private function determineFirstAttack()
     {
+        $this->sortPlayers();
 
-
-
-
-        foreach ($this->players as $k => $player) {
-
-            //
-
-        }
-
-
-        if ($this->beast->speed > $this->hero->speed) {
-            $this->attack = $this->beast->player;
-            $this->defence = $this->hero->player;
-        } else if ($this->beast->speed == $this->hero->speed) {
-            if ($this->beast->luck > $this->hero->luck) {
-                $this->attack = $this->beast->player;
-                $this->defence = $this->hero->player;
-            }
-        }
-
-        echo "First attack is carried by " . $this->attack . "\n";
+        $this->attackers = array_slice($this->players, 0, 1);
+        $this->defenders = array_slice($this->players, 1);
 
         $this->fight();
 
+//        echo "Attacker: ";
+//        var_dump($this->attacker);
+//        echo "Defender: ";
+//        var_dump($this->defender);
+//
+//        echo "Players: ";
+//        var_dump($this->players);
     }
 
     public function fight($rounds = 1)
     {
         for ($i=1; $i<=$rounds; $i++) {
-            $this->attack();
+
+            /** @var Player $attacker */
+            foreach ($this->attackers as $attacker) {
+
+                /** @var Player $defender */
+                foreach ($this->defenders as $defender) {
+                    $damage = $attacker->health - $defender->defence;
+                    $defender->health -= $damage;
+                    echo "Damage was $damage from {$defender->health} \n";
+                }
+
+            }
         }
     }
 
@@ -171,10 +138,42 @@ class Battle
 
 }
 
+$hero = array(
+    'name' => 'hero',
+    'health' => rand(50, 70),
+    'strength'  => rand(40, 60),
+    'defence' => rand(45, 55),
+    'speed' => rand(40, 50),
+    'luck' => rand(10, 30),
+    'rapidStrike' => 10,
+    'magicShield' => 20,
+);
 
-//$hero = new Hero;
-//$beast = new Beast;
+$beast = array(
+    'name' => 'beast',
+    'health' => rand(60, 90),
+    'strength'  => rand(60, 90),
+    'defence' => rand(40, 60),
+    'speed' => rand(40, 60),
+    'luck' => rand(25, 40),
+);
+
+$monster = array(
+    'name' => 'monster',
+    'health' => rand(60, 90),
+    'strength'  => rand(60, 90),
+    'defence' => rand(40, 60),
+    'speed' => rand(40, 60),
+    'luck' => rand(25, 40),
+);
 
 
-new Battle;
+$game = new Game;
 
+$game->addPlayer($hero);
+$game->addPlayer($beast);
+$game->addPlayer($monster);
+
+$game->prepareForFight();
+
+//var_dump($game->players);
