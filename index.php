@@ -11,10 +11,8 @@ $hero = array(
     'defence' => rand(45, 55),
     'speed' => rand(40, 50),
     'luck' => rand(10, 30),
-    'skills' => array(
-        'rapidStrike' => 10,
-        'magicShield' => 20,
-    ),
+    'rapidStrike' => 10,
+    'magicShield' => 20,
 );
 
 class Player
@@ -25,21 +23,30 @@ class Player
     public $defence;
     public $speed;
     public $luck;
-    public $hasLuck = false;
+    private $hasLuck = false;
+
+    private $reguiredProperties = array('name', 'health', 'strength', 'defence', 'speed', 'luck');
 
     public $rapidStrike;
     public $magicShield;
 
     public function __construct(array $player) {
-        foreach ($player as $property) {
-            if (property_exists($property)) {
-
+        foreach ($player as $property => $value) {
+            if (property_exists('Player', $property)) {
+                $this->{$property} = $value;
             } else {
+                die('Property doesn\'t exists');
                 // @TODO: Property doesn't exists
             }
         }
     }
 }
+
+$player = new Player($hero);
+
+var_dump($player);
+
+die('aici');
 
 class Hero extends Player
 {
@@ -63,7 +70,7 @@ class Battle
 {
     public $attack  = array(); // Default attack - hero. (Not mentioned in game...)
     public $defence = array();
-    public $players
+    public $players;
 
     public function __construct(array $players)
     {
@@ -105,7 +112,7 @@ class Battle
 
         foreach ($this->players as $k => $player) {
 
-            if ($player)
+            //
 
         }
 
