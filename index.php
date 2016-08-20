@@ -49,10 +49,10 @@ class Game
         $this->players[] = new Player($player);
     }
 
-    public function startBattle()
+    public function play()
     {
-        $this->determineFirstAttack();
-        $this->fightRounds();
+        $this->setFirstAttack();
+        $this->startFight();
     }
 
     /**
@@ -72,7 +72,7 @@ class Game
     /**
      * First attack is carried by first element. The others elements represents defender (defenders may be a feature)
      */
-    private function determineFirstAttack()
+    private function setFirstAttack()
     {
         $this->sortPlayers();
 
@@ -85,14 +85,15 @@ class Game
     /**
      * @param int $rounds
      */
-    public function fightRounds($rounds = 20)
+    public function startFight($rounds = 20)
     {
         for ($i=1; $i<=$rounds; $i++) {
+
+            echo "THE ROUND $i STARTED: \n\n";
 
             /** @var Player $attacker */
             foreach ($this->attackers as $attacker) {
 
-                //echo "{$attacker->name} atta";
                 echo "{$attacker->name} attacks with {$attacker->strength} strength the ";
 
                 /** @var Player $defender */
@@ -103,15 +104,13 @@ class Game
 
                         // Rapid strike
                         if (isset($attacker->rapidStrike) && self::getLuck($attacker->rapidStrike)) {
-                            echo 'Rapid strike use...';
+                            echo "{$defender->name} is using Rapid strike... \n";
                             self::attack($attacker, $defender);
                         }
 
                         if ($defender->health < 0) {
                             echo $defender->name . " is out! \n";
                             unset($this->defenders[$k]);
-                            print_r($this->defenders);
-                            print_r($this->attackers);
                         }
 
                     } else {
@@ -122,8 +121,22 @@ class Game
 
             }
 
+            $winners = null;
+
+            if ( ! count($this->attackers)) {
+                $winners = $this->defenders;
+            } else if ( ! count($this->defenders)) {
+                $winners = $this->attackers;
+            }
+
+            if (isset($winners)) {
+                echo "The winners is: \n\n";
+                print_r($winners);
+                die('GAME OVER');
+            }
+
             // Change attackers with defenders...
-            echo "change turn...";
+            echo "change turn... \n\n";
 
             list($this->attackers,$this->defenders) = array($this->defenders,$this->attackers);
 
@@ -139,7 +152,7 @@ class Game
 
         // Magic shield
         if (isset($defender->magicShield) && self::getLuck($defender->magicShield)) {
-            echo 'Magic shield is use...';
+            echo "{$defender->name} is using magic shield... \n";
             $damage = $damage/2;
         }
 
@@ -148,7 +161,6 @@ class Game
         echo "{$defender->name} with {$defender->defence} defence wich have $damage damage from {$defender->health} health. \n";
         $defender->health -= $damage;
         echo "Health remaining: {$defender->health} \n";
-
 
     }
 
@@ -205,6 +217,6 @@ $game->addPlayer($hero);
 $game->addPlayer($beast);
 $game->addPlayer($monster);
 
-$game->startBattle();
+$game->play();
 
 //var_dump($game->players);
