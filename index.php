@@ -17,12 +17,12 @@ class Player
     public $magicShield;
 
     public $hasLuck = false;
-    private $requiredProperties = array('name', 'health', 'strength', 'defence', 'speed', 'luck');
+    private $requiredStats = array('name', 'health', 'strength', 'defence', 'speed', 'luck');
 
     public function __construct(array $player) {
 
         // Check for required properties
-        if ($needed = array_diff($this->requiredProperties, array_keys($player))) {
+        if ($needed = array_diff($this->requiredStats, array_keys($player))) {
             $needed = implode(", ", $needed);
             die("$needed properties missing!");
             // @TODO: requiredProperties needed!
@@ -49,10 +49,10 @@ class Game
         $this->players[] = new Player($player);
     }
 
-    public function play()
+    public function startBattle()
     {
         $this->determineFirstAttack();
-        $this->fight();
+        $this->fightRounds();
     }
 
     /**
@@ -79,32 +79,41 @@ class Game
         $this->attackers = array_slice($this->players, 0, 1);
         $this->defenders = array_slice($this->players, 1);
 
-        var_dump($this->players);
+        print_r($this->players);
     }
 
     /**
      * @param int $rounds
      */
-    public function fight($rounds = 1)
+    public function fightRounds($rounds = 20)
     {
         for ($i=1; $i<=$rounds; $i++) {
 
             /** @var Player $attacker */
             foreach ($this->attackers as $attacker) {
 
-                //echo "{$attacker->name} attacks with {$attacker->strength} strength the ";
+                //echo "{$attacker->name} atta";
+                echo "{$attacker->name} attacks with {$attacker->strength} strength the ";
 
                 /** @var Player $defender */
-                foreach ($this->defenders as $defender) {
+                foreach ($this->defenders as $k => $defender) {
 
                     if ( ! self::getLuck($defender->luck)) {
-                        $damage = $attacker->strength - $defender->defence;
+                        self::attack($attacker, $defender);
 
-                        echo '(' . $attacker->strength . " - " . $defender->defence . ") \n\n";
+                        // Rapid strike
+                        if (isset($attacker->rapidStrike) && self::getLuck($attacker->rapidStrike)) {
+                            echo 'Rapid strike use...';
+                            self::attack($attacker, $defender);
+                        }
 
-                        echo "{$defender->name} with {$defender->defence} defence wich have $damage damage from {$defender->health} health. \n";
-                        $defender->health -= $damage;
-                        echo "Health remaining: {$defender->health} \n";
+                        if ($defender->health < 0) {
+                            echo $defender->name . " is out! \n";
+                            unset($this->defenders[$k]);
+                            print_r($this->defenders);
+                            print_r($this->attackers);
+                        }
+
                     } else {
                         echo "attacker has missed :)) \n";
                     }
@@ -113,23 +122,33 @@ class Game
 
             }
 
-            // Change ..
+            // Change attackers with defenders...
+            echo "change turn...";
+
+            list($this->attackers,$this->defenders) = array($this->defenders,$this->attackers);
 
         }
     }
-
-    public function attack()
+    /**
+     * @var Player $attacker
+     * @var Player $defender
+     */
+    private static function attack($attacker, $defender)
     {
-        $this->hero->hasLuck = $this->getLuck($this->hero->luck);
-        $this->beast->hasLuck = $this->getLuck($this->beast->luck);
+        $damage = $attacker->strength - $defender->defence;
 
-        $damage = $this->{$this->attack}->strength - $this->{$this->defence}->defence; // @TODO: What happen's with negative values?
-        echo "Damage was $damage from {$this->defence} " . $this->{$this->defence}->health . "\n";
-        $this->{$this->defence}->health -= $damage;
+        // Magic shield
+        if (isset($defender->magicShield) && self::getLuck($defender->magicShield)) {
+            echo 'Magic shield is use...';
+            $damage = $damage/2;
+        }
 
-        var_dump(get_object_vars($this->hero));
-        var_dump(get_object_vars($this->beast));
-        echo "\n";
+        echo '(' . $attacker->strength . " - " . $defender->defence . ") \n\n";
+
+        echo "{$defender->name} with {$defender->defence} defence wich have $damage damage from {$defender->health} health. \n";
+        $defender->health -= $damage;
+        echo "Health remaining: {$defender->health} \n";
+
 
     }
 
@@ -170,22 +189,22 @@ $beast = array(
     'luck' => rand(25, 40),
 );
 
-//$monster = array(
-//    'name' => 'monster',
-//    'health' => rand(60, 90),
-//    'strength'  => rand(60, 90),
-//    'defence' => rand(40, 60),
-//    'speed' => rand(40, 60),
-//    'luck' => rand(25, 40),
-//);
+$monster = array(
+    'name' => 'monster',
+    'health' => rand(60, 90),
+    'strength'  => rand(60, 90),
+    'defence' => rand(40, 60),
+    'speed' => rand(40, 60),
+    'luck' => rand(25, 40),
+);
 
 
 $game = new Game;
 
 $game->addPlayer($hero);
 $game->addPlayer($beast);
-//$game->addPlayer($monster);
+$game->addPlayer($monster);
 
-$game->play();
+$game->startBattle();
 
 //var_dump($game->players);
