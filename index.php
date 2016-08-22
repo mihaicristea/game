@@ -38,31 +38,31 @@ $beast = array(
     'luck' => rand(25, 40),
 );
 
-//$monster = array(
-//    'name' => 'monster',
-//    'health' => rand(60, 90),
-//    'strength'  => rand(60, 90),
-//    'defence' => rand(40, 60),
-//    'speed' => rand(40, 60),
-//    'luck' => rand(25, 40),
-//    'skills' => array(
-//        'rapidStrike' => array(
-//            'attack' => 1,
-//            'chance' => 50
-//        ),
-//        'magicShield' => array(
-//            'defence' => 1,
-//            'chance' => 100
-//        ),
-//    ),
-//);
+$monster = array(
+    'name' => 'monster',
+    'health' => rand(60, 90),
+    'strength'  => rand(60, 90),
+    'defence' => rand(40, 60),
+    'speed' => rand(40, 60),
+    'luck' => rand(25, 40),
+    'skills' => array(
+        'rapidStrike' => array(
+            'attack' => 1,
+            'chance' => 50
+        ),
+        'magicShield' => array(
+            'defence' => 1,
+            'chance' => 100
+        ),
+    ),
+);
 
 try {
     $game = new Game;
 
     $game->addPlayer($hero);
     $game->addPlayer($beast);
-    $game->addPlayer($monster); // Feature
+    //$game->addPlayer($monster); // Feature
 
     $game->startFight();
 
