@@ -7,7 +7,6 @@
 
 require_once __DIR__.'/vendor/autoload.php';
 
-use Game\Player;
 use Game\Game;
 
 $hero = array(
