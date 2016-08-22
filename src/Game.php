@@ -104,7 +104,7 @@ class Game
 
                 $winners = implode(', ', $winners);
 
-                View::add("\nGAME OVER! \nThe winners is: $winners \n\n");
+                View::add("\nGAME OVER! \nThe winners are: $winners \n\n");
 
                 View::output();
 
