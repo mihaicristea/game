@@ -50,7 +50,7 @@ class Game
     public function startFight($rounds = 20)
     {
         View::add("-------------------------------------------------------------------\n");
-        View::add("------------------------ The fight started ------------------------\n");
+        View::add("------------------------------ Start ------------------------------\n");
         View::add("-------------------------------------------------------------------\n");
 
         for ($i=1; $i<=$rounds; $i++) {
@@ -60,17 +60,19 @@ class Game
             }
 
             View::add("\n------------------------ Round number: $i ------------------------\n");
-            View::add("*** The fight is carried by '{$this->attackers[0]->name}' ***\n");
+
+            $attackerName = array_values($this->attackers)[0]->name;
+            View::add("*** The fight is carried by '$attackerName' ***\n\n");
 
             /** @var Player $attacker */
             foreach ($this->attackers as $attacker) {
 
-                View::add("{$attacker->name} attacks (strength: {$attacker->strength}, health: {{$attacker->strength}})  the ");
-
                 /** @var Player $defender */
                 foreach ($this->defenders as $k => $defender) {
 
-                    if ( ! self::getLuck($defender->luck)) {
+                    View::add("{$attacker->name} attacks {$defender->name} \n");
+
+                    if ( ! self::getLuck($defender->luck, $defender->name)) {
                         $this->attack($attacker, $defender);
 
                         if ($defender->health < 0) {
@@ -79,9 +81,9 @@ class Game
                         }
 
                     } else {
-                        View::add( "attacker has missed :)) \n");
+                        View::add( "'{$attacker->name}' has missed! \n");
                     }
-
+                    View::add("\n----------------------------------------------------------------\n");
                 }
 
             }
@@ -95,9 +97,17 @@ class Game
             }
 
             if (isset($winners)) {
-                View::add("\nGAME OVER! \nThe winners is: \n\n");
-                print_r($winners);
+                $winners = array_map(function($winner) {
+                    //var_dump($winner->name); die();
+                    return $winner->name;
+                }, $winners);
+
+                $winners = implode(', ', $winners);
+
+                View::add("\nGAME OVER! \nThe winners is: $winners \n\n");
+
                 View::output();
+
                 die();
             }
 
@@ -117,14 +127,19 @@ class Game
 
         $params['damage'] = $attacker->strength - $defender->defence;
 
-        $this->useSkills($attacker, $params, 'attack');
-        $this->useSkills($defender, $params, 'defence');
+        View::add("{$attacker->name} (damage: {$params['damage']} strength: {$attacker->strength}, health: {$attacker->health}, speed: {$attacker->speed}) , defence: {$attacker->defence}, luck: {$attacker->luck}%) \n");
+        $params = $this->useSkills($attacker, $params, 'attack');
+        $params = $this->useSkills($defender, $params, 'defence');
 
-        View::add('(' . $attacker->strength . " - " . $defender->defence . ") \n\n");
 
-        View::add("{$defender->name} with {$defender->defence} defence wich have {$params['damage']} damage from {$defender->health} health. \n");
+        //View::add("{$attacker->name}  (strength: {$attacker->strength}, health: {{$attacker->strength}})  the ");
+        //View::add('(' . $attacker->strength . " - " . $defender->defence . ") \n\n");
+
+        //View::add("{$defender->name} with {$defender->defence} defence wich have {$params['damage']} damage from {$defender->health} health. \n");
+        View::add("{$defender->name} (strength: {$defender->strength}, health: {$defender->health}, speed: {$defender->speed}, defence: {$defender->defence}, luck: {$defender->luck}%) \n");
         $defender->health -= $params['damage'];
-        View::add("Health remaining: {$defender->health} \n");
+
+        View::add("{$defender->name} health remaining: {$defender->health} \n");
 
     }
 
@@ -140,10 +155,10 @@ class Game
             foreach ($player->skills as $skill => $value) {
                 if (isset($value[$useWhen]) && $value[$useWhen] == 1 ) {
                     $params = $this->{"set$skill"}($player, $params); // setmagicShield // not ok
-                    return $params;
                 }
             }
         }
+        return $params;
     }
 
     /**
@@ -154,16 +169,15 @@ class Game
     private function setMagicShield(Player $player, array $params)
     {
         // Magic shield
-        if (isset($player->skills['magicShield']) && self::getLuck($player->skills['magicShield']['chance'])) {
+        if (isset($player->skills['magicShield']) && self::getLuck($player->skills['magicShield']['chance'], $player->name, 'magic shield')) {
             if ( ! isset($params['damage'])) {
                 // @TODO: damage params missing!
                 die('Damagae params missing!');
             }
-            View::add("\n+++ {$player->name} is using magic shield +++\n");
             $params['damage'] = $params['damage'] / 2;
-
-            return $params;
+            View::add("\n+++ {$player->name} is using magic shield. Damage: {$params['damage']} +++\n");
         }
+        return $params;
     }
 
     /**
@@ -174,21 +188,25 @@ class Game
     private function setRapidStrike(Player $player, array $params)
     {
         // Rapid strike
-        if (isset($player->skills['rapidStrike']) && self::getLuck($player->skills['rapidStrike']['chance'])) {
+        if (isset($player->skills['rapidStrike']) && self::getLuck($player->skills['rapidStrike']['chance'], $player->name, 'rapid strike')) {
             View::add("\n+++ {$player->name} is using rapid strike +++\n");
             $params['damage'] = $params['damage'] * 2;
-            return $params;
+            View::add("\n+++ {$player->name} is using rapid strike. Damage: {$params['damage']} +++\n");
         }
+        return $params;
     }
 
     /**
      * @param int $chance
      * @return bool
      */
-    private static function getLuck($chance)
+    private static function getLuck($chance, $playerName = '', $use=null)
     {
         if (rand(1, 100) <= $chance) {
-            View::add("Has luck this time! :) ($chance%) \n");
+            if (isset($use)) {
+                $use = "Will use $use";
+            }
+            View::add("+++ $playerName has luck this time! $use (chance: $chance%)+++ \n");
             return true;
         }
 

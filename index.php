@@ -20,10 +20,10 @@ $hero = array(
     'skills' => array(
         'rapidStrike' => array(
             'attack' => 1,
-            'chance' => 100
+            'chance' => 10
         ),
         'magicShield' => array(
-            'defense' => 1,
+            'defence' => 1,
             'chance' => 20
         ),
     ),
@@ -36,16 +36,6 @@ $beast = array(
     'defence' => rand(40, 60),
     'speed' => rand(40, 60),
     'luck' => rand(25, 40),
-    'skills' => array(
-        'rapidStrike' => array(
-            'attack' => 1,
-            'chance' => 100
-        ),
-        'magicShield' => array(
-            'defense' => 1,
-            'chance' => 20
-        ),
-    ),
 );
 
 $monster = array(
@@ -55,6 +45,16 @@ $monster = array(
     'defence' => rand(40, 60),
     'speed' => rand(40, 60),
     'luck' => rand(25, 40),
+    'skills' => array(
+        'rapidStrike' => array(
+            'attack' => 1,
+            'chance' => 50
+        ),
+        'magicShield' => array(
+            'defence' => 1,
+            'chance' => 100
+        ),
+    ),
 );
 
 try {
