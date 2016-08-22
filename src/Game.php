@@ -127,7 +127,7 @@ class Game
 
         $params['damage'] = $attacker->strength - $defender->defence;
 
-        View::add("{$attacker->name} (damage: {$params['damage']} strength: {$attacker->strength}, health: {$attacker->health}, speed: {$attacker->speed}) , defence: {$attacker->defence}, luck: {$attacker->luck}%) \n");
+        View::add("{$attacker->name} (damage: {$params['damage']} strength: {$attacker->strength}, health: {$attacker->health}, speed: {$attacker->speed}, defence: {$attacker->defence}, luck: {$attacker->luck}%) \n");
         $params = $this->useSkills($attacker, $params, 'attack');
         $params = $this->useSkills($defender, $params, 'defence');
 
