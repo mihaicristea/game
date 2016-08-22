@@ -131,11 +131,6 @@ class Game
         $params = $this->useSkills($attacker, $params, 'attack');
         $params = $this->useSkills($defender, $params, 'defence');
 
-
-        //View::add("{$attacker->name}  (strength: {$attacker->strength}, health: {{$attacker->strength}})  the ");
-        //View::add('(' . $attacker->strength . " - " . $defender->defence . ") \n\n");
-
-        //View::add("{$defender->name} with {$defender->defence} defence wich have {$params['damage']} damage from {$defender->health} health. \n");
         View::add("{$defender->name} (strength: {$defender->strength}, health: {$defender->health}, speed: {$defender->speed}, defence: {$defender->defence}, luck: {$defender->luck}%) \n");
         $defender->health -= $params['damage'];
 
